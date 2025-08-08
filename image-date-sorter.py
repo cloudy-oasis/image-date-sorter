@@ -42,30 +42,37 @@ if __name__ == "__main__":
     dirs_created = 0
     files_moved = 0
     files_ignored = 0
-    for i in os.listdir(args.image_dir):
+    for i in os.listdir(prefix):
         if not os.path.isfile(f"{prefix}/{i}"):
             continue
 
-        # ignore recent files
+        # Ignore recent files
         stat_result = os.stat(f"{prefix}/{i}")
         mtime = datetime.fromtimestamp(stat_result.st_mtime)
         if mtime > date_limit:
             files_ignored += 1
             continue
 
-        # find and create the directory if needed
+        # Find and create the directory if needed
         target_dir = f"{mtime.year:04}-{mtime.month:02}"
         if not os.path.exists(f"{prefix}/{target_dir}"):
             print(f"+ {target_dir}")
             os.mkdir(f"{prefix}/{target_dir}")
             dirs_created += 1
 
-        # move the file
+        # Move the file
         print(f"{i} -> {target_dir}")
         os.rename(f"{prefix}/{i}", f"{prefix}/{target_dir}/{i}")
         files_moved += 1
 
+# Align numbers to the right, padding with spaces. It should look like this:
+# Done:
+#      +   3 dirs created
+#     -> 123 files moved
+#     ()  23 files ignored
+
+n_len = max((len(str(i)) for i in [dirs_created, files_moved, files_ignored]))
 print("Done:")
-print(f"\t  + {dirs_created} directories created")
-print(f"\t -> {files_moved} files moved")
-print(f"\t () {files_ignored} files ignored")
+print("\t  + {d: >{len}} dirs created".format(d=dirs_created, len=n_len))
+print("\t -> {f: >{len}} files moved".format(f=files_moved, len=n_len))
+print("\t () {f: >{len}} files ignored".format(f=files_ignored, len=n_len))
